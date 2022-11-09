@@ -145,4 +145,15 @@ def test_signin_invalid_user():
     hash_service = FakeHashService()
     usecase = SignIn(user_repo, hash_service)
     with pytest.raises(InvalidCredentialsError):
-        usecase.perform('invalid@user.com', 'test1234TEST&')
+        usecase.perform('invalid@user.com', '234TEST&')
+
+
+def test_password_lowercase_letter():
+    user_repo = InMemoryUserRepository()
+    hash_service = FakeHashService()
+    user_name = 'Joe Doe'
+    user_email = 'joe@doe.com'
+    user_password = '1234TEST&'
+    usecase = SignUp(user_repo, hash_service)
+    with pytest.raises(InvalidPasswordError):
+        usecase.perform(user_name, user_email, user_password)
