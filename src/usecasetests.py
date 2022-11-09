@@ -2,6 +2,7 @@ from inmemoryuserrepository import InMemoryUserRepository
 from signup import SignUp
 import pytest
 from duplicateusererror import DuplicateUserError
+from invalidpassworderror import InvalidPasswordError
 from fakehashservice import FakeHashService
 
 def test_signup_with_valid_data():
@@ -40,3 +41,63 @@ def test_hash_password():
     assert saved_user.name == user_name
     assert saved_user.password != user_password
     assert hash_service.check(user_password, saved_user.password)
+
+def test_password_lower_case_letter():
+    user_repo = InMemoryUserRepository()
+    hash_service = FakeHashService()
+    user_name = 'Joe Doe'
+    user_email = 'joe@doe.com'
+    user_password = 'TEST1234TEST&'
+    usecase = SignUp(user_repo, hash_service)
+    with pytest.raises(InvalidPasswordError):
+        usecase.perform(user_name, user_email, user_password)
+
+def test_password_upper_case_letter():
+    user_repo = InMemoryUserRepository()
+    hash_service = FakeHashService()
+    user_name = 'Joe Doe'
+    user_email = 'joe@doe.com'
+    user_password = 'test1234test&'
+    usecase = SignUp(user_repo, hash_service)
+    with pytest.raises(InvalidPasswordError):
+        usecase.perform(user_name, user_email, user_password)
+
+def test_password_number():
+    user_repo = InMemoryUserRepository()
+    hash_service = FakeHashService()
+    user_name = 'Joe Doe'
+    user_email = 'joe@doe.com'
+    user_password = 'testTESTtest&'
+    usecase = SignUp(user_repo, hash_service)
+    with pytest.raises(InvalidPasswordError):
+        usecase.perform(user_name, user_email, user_password)
+
+def test_password_special_character():
+    user_repo = InMemoryUserRepository()
+    hash_service = FakeHashService()
+    user_name = 'Joe Doe'
+    user_email = 'joe@doe.com'
+    user_password = 'TEST1234testE'
+    usecase = SignUp(user_repo, hash_service)
+    with pytest.raises(InvalidPasswordError):
+        usecase.perform(user_name, user_email, user_password)
+
+def test_password_too_short():
+    user_repo = InMemoryUserRepository()
+    hash_service = FakeHashService()
+    user_name = 'Joe Doe'
+    user_email = 'joe@doe.com'
+    user_password = 'tE1&C'
+    usecase = SignUp(user_repo, hash_service)
+    with pytest.raises(InvalidPasswordError):
+        usecase.perform(user_name, user_email, user_password)
+
+def test_password_too_long():
+    user_repo = InMemoryUserRepository()
+    hash_service = FakeHashService()
+    user_name = 'Joe Doe'
+    user_email = 'joe@doe.com'
+    user_password = 'tE1&CtE1&CtE1&Ct'
+    usecase = SignUp(user_repo, hash_service)
+    with pytest.raises(InvalidPasswordError):
+        usecase.perform(user_name, user_email, user_password)
