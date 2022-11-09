@@ -1,8 +1,10 @@
 from inmemoryuserrepository import InMemoryUserRepository
 from signup import SignUp
+from signin import SignIn
 import pytest
 from duplicateusererror import DuplicateUserError
 from invalidpassworderror import InvalidPasswordError
+from invalidcredentialserror import InvalidCredentialsError
 from fakehashservice import FakeHashService
 
 def test_signup_with_valid_data():
@@ -101,3 +103,33 @@ def test_password_too_long():
     usecase = SignUp(user_repo, hash_service)
     with pytest.raises(InvalidPasswordError):
         usecase.perform(user_name, user_email, user_password)
+
+def test_valid_signin():
+    user_repo = InMemoryUserRepository()
+    hash_service = FakeHashService()
+    user_name = 'Joe Doe'
+    user_email = 'joe@doe.com'
+    user_password = 'test1234TEST&'
+    signup = SignUp(user_repo, hash_service)
+    signup.perform(user_name, user_email, user_password)
+    usecase = SignIn(user_repo, hash_service)
+    assert usecase.perform(user_email, user_password) == True
+
+def test_signin_wrong_password():
+    user_repo = InMemoryUserRepository()
+    hash_service = FakeHashService()
+    user_name = 'Joe Doe'
+    user_email = 'joe@doe.com'
+    user_password = 'test1234TEST&'
+    signup = SignUp(user_repo, hash_service)
+    signup.perform(user_name, user_email, user_password)
+    usecase = SignIn(user_repo, hash_service)
+    with pytest.raises(InvalidCredentialsError):
+        usecase.perform(user_email, 'WRONG_PASSWORD')
+
+def test_signin_invalid_user():
+    user_repo = InMemoryUserRepository()
+    hash_service = FakeHashService()
+    usecase = SignIn(user_repo, hash_service)
+    with pytest.raises(InvalidCredentialsError):
+        usecase.perform('invalid@user.com', 'test1234TEST&')
