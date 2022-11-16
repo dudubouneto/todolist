@@ -18,6 +18,7 @@ class SignUp:
         hashed_pwd = self.hash_service.hash(user_password)
         user = User(user_name, user_email, hashed_pwd)
         self.userrepo.add(user)
+        return True
 
 
 def invalid(user_password):

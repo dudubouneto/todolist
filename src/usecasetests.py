@@ -157,3 +157,41 @@ def test_password_lowercase_letter():
     usecase = SignUp(user_repo, hash_service)
     with pytest.raises(InvalidPasswordError):
         usecase.perform(user_name, user_email, user_password)
+
+
+def test_successful_signin():
+    user_repo = InMemoryUserRepository()
+    hash_service = FakeHashService()
+    user_name = 'Joe Doe'
+    user_email = 'joe@doe.com'
+    user_password = '1234TeST&'
+    signup = SignUp(user_repo, hash_service)
+    signup.perform(user_name, user_email, user_password)
+    usecase = SignIn(user_repo, hash_service)
+    assert usecase.perform(user_email, user_password) == True
+
+
+def test_signin_wrong_password():
+    user_repo = InMemoryUserRepository()
+    hash_service = FakeHashService()
+    user_name = 'Joe Doe'
+    user_email = 'joe@doe.com'
+    user_password = '1234TeST&'
+    signup = SignUp(user_repo, hash_service)
+    signup.perform(user_name, user_email, user_password)
+    usecase = SignIn(user_repo, hash_service)
+    with pytest.raises(InvalidCredentialsError):
+        usecase.perform(user_email, 'WRONG_PASSWORD')
+
+
+def test_signin_invalid_user():
+    user_repo = InMemoryUserRepository
+    hash_service = FakeHashService
+    signup = SignUp(user_repo, hash_service)
+    user_name = 'Joe Doe'
+    user_email = 'joe@doe.com'
+    user_password = '1234TeST&'
+    signup.perform(user_name, user_email, user_password)
+    usecase = SignIn(user_repo, hash_service)
+    with pytest.raises(InvalidCredentialsError):
+        usecase.perform('WRONG_EMAIL', user_password)
